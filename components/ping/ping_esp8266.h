@@ -60,6 +60,7 @@ class PingSensorESP8266 : public PingSensor {
 
       ESP_LOGI(TAG, "packet loss: %0.1f %% latency: %d ms", loss * 100, mean);
       this->reset();
+      this->update();
       return true;
     });
     ping.begin(target.c_str(), n_packet, timeout);
