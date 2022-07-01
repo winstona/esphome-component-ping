@@ -29,6 +29,21 @@ namespace esphome {
 namespace ping {
 class PingSensorESP8266 : public PingSensor {
  public:
+  void publish() {
+    float loss;
+    int latency_ms;
+
+    loss = this->get_latest_loss();
+    latency_ms = this->get_latest_latency();
+
+    if (loss >= 0 && this->packet_loss_sensor_ != nullptr) {
+      packet_loss_sensor_->publish_state(loss);
+    }
+    if (latency_ms >= 0 && this->latency_sensor_ != nullptr) {
+      latency_sensor_->publish_state((float) latency_ms / 1000);
+    }
+  }
+
   void setup() override {
     ping.on(EACH_RESULT, [this](const AsyncPingResponse &response) {
       if (response.answer) {
@@ -60,25 +75,26 @@ class PingSensorESP8266 : public PingSensor {
 
       ESP_LOGI(TAG, "packet loss: %0.1f %% latency: %d ms", loss * 100, mean);
       this->reset();
-      this->update();
+      this->publish();
       return true;
     });
     ping.begin(target.c_str(), n_packet, timeout);
   }
 
   void update() override {
-    float loss;
-    int latency_ms;
+    // float loss;
+    // int latency_ms;
 
-    loss = this->get_latest_loss();
-    latency_ms = this->get_latest_latency();
+    // loss = this->get_latest_loss();
+    // latency_ms = this->get_latest_latency();
 
-    if (loss >= 0 && this->packet_loss_sensor_ != nullptr) {
-      packet_loss_sensor_->publish_state(loss);
-    }
-    if (latency_ms >= 0 && this->latency_sensor_ != nullptr) {
-      latency_sensor_->publish_state((float) latency_ms / 1000);
-    }
+    // if (loss >= 0 && this->packet_loss_sensor_ != nullptr) {
+    //   packet_loss_sensor_->publish_state(loss);
+    // }
+    // if (latency_ms >= 0 && this->latency_sensor_ != nullptr) {
+    //   latency_sensor_->publish_state((float) latency_ms / 1000);
+    // }
+
     ping.begin(target.c_str(), n_packet, timeout);
   }
 
